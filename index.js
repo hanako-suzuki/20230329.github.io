@@ -21,7 +21,7 @@ video.playsInline = true;
 const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
 const promise = navigator.mediaDevices.getUserMedia(medias);
-// const textArea = document.getElementById("textArea");
+const textArea = document.getElementById("textArea");
 
 // import LSD from './lsd/lsd';
 
@@ -44,6 +44,18 @@ function successCallback(stream) {
   let blackAndWhiteMatPre = new cv.Mat(height, width, cv.CV_8UC1);
   let blackAndWhiteMatNow = new cv.Mat(height, width, cv.CV_8UC1);
 
+  let videoPreview = new cv.Mat(height, width, cv.CV_8UC4);
+  const box_size = 10;
+  const box_size_harf = box_size/2;
+  const base_x = 150;
+  const base_y = 255;
+  const image_size = 100;
+  const left_high = [new cv.Point(base_x,base_y), new cv.Point(base_x+box_size,base_y), new cv.Point(base_x+box_size,base_y+box_size), new cv.Point(base_x,base_y+box_size)];
+  const right_high = [new cv.Point(base_x+image_size,base_y), new cv.Point(base_x+image_size+box_size,base_y), new cv.Point(base_x+image_size+box_size,base_y+box_size), new cv.Point(base_x+image_size,base_y+box_size)];
+  const right_low =[new cv.Point(base_x+image_size,base_y+image_size), new cv.Point(base_x+image_size+box_size,base_y+image_size), new cv.Point(base_x+image_size+box_size,base_y+image_size+box_size), new cv.Point(base_x+image_size,base_y+image_size+box_size)];
+  const left_low = [new cv.Point(base_x,base_y+image_size), new cv.Point(base_x+box_size,base_y+image_size), new cv.Point(base_x+box_size,base_y+image_size+box_size), new cv.Point(base_x,base_y+image_size+box_size)];
+  const preview_points = [left_high, right_high, left_low, right_low];
+
   let posLog = []; // 0:x 1:y 2: theta 3:frequency
   const comp_length = 5;
   let colorRed = new cv.Scalar(255, 0, 0);
@@ -59,7 +71,6 @@ function successCallback(stream) {
   canvas.height = height;
 
   processVideo();
-  // processVideo();
 
   function processVideo() {
     try{
@@ -72,6 +83,67 @@ function successCallback(stream) {
       // videoMatPre.copyTo(videoMatNow);
       // videoMatNow.data.set(ctx.getImageData(0, 0, width, height).data);
       videoMatNow = cv.matFromImageData(ctx.getImageData(0, 0, canvas.width, canvas.height));
+
+      videoPreview = videoMatNow.clone();
+      for(let i=0;i<3;i++){
+        for(let j=0; j<4; j++){
+          cv.line(videoPreview, preview_points[i][j], preview_points[i][(j+1)%4],colorRed, 1);
+        }
+      }
+      cv.imshow("canvas",videoPreview);
+
+      // get pilot signal
+      if(read_flag==20){
+
+        // pilot signal -Red
+        let R_value = 0;
+        let G_value = 0;
+        let B_value = 0;
+        for(let i=left_high[0].x+box_size_harf-1; i<left_high[0].x+box_size_harf+1; i++){
+          for(let j=left_high[0].y+box_size_harf-1; j<left_high[0].y+box_size_harf+1; j++){
+            let data = videoPreview.ucharPtr(i,j);
+            R_value += data[0]/4;
+            G_value += data[1]/4;
+            B_value += data[2]/4;
+          }
+        }
+        const R_pilot = [R_value, G_value, B_value];
+
+        // pilot signal -Green
+        R_value = 0;
+        G_value = 0;
+        B_value = 0;
+        for(let i=right_high[0].x+box_size_harf-1; i<right_high[0].x+box_size_harf+1; i++){
+          for(let j=right_high[0].y+box_size_harf-1; j<right_high[0].y+box_size_harf+1; j++){
+            let data = videoPreview.ucharPtr(i,j);
+            R_value += data[0]/4;
+            G_value += data[1]/4;
+            B_value += data[2]/4;
+          }
+        }
+        const G_pilot = [R_value, G_value, B_value];
+
+        // pilot signal -Blue
+        R_value = 0;
+        G_value = 0;
+        B_value = 0;
+        for(let i=left_low[0].x+box_size_harf-1; i<left_low[0].x+box_size_harf+1; i++){
+          for(let j=left_low[0].y+box_size_harf-1; j<left_low[0].y+box_size_harf+1; j++){
+            let data = videoPreview.ucharPtr(i,j);
+            R_value += data[0]/4;
+            G_value += data[1]/4;
+            B_value += data[2]/4;
+          }
+        }
+        const B_pilot = [R_value, G_value, B_value];
+
+        textArea.innerHTML = "R: [" + String(R_pilot[0]) + ", " + String(R_pilot[1]) + ", " + String(R_pilot[2]) + "] " +
+                             "G: [" + String(G_pilot[0]) + ", " + String(G_pilot[1]) + ", " + String(G_pilot[2]) + "] " +
+                             "B: [" + String(B_pilot[0]) + ", " + String(B_pilot[1]) + ", " + String(B_pilot[2]);
+      }
+    
+      
+      /*
       // cv.imshow("canvas", videoMatNow);
       // videoMatNow.data.set(cv.matFromImageData(imageData));
 
@@ -392,7 +464,7 @@ function successCallback(stream) {
           //   posLog.pop(); // posLogの一番最後を削除
           // }
         }
-        cv.imshow("canvas", videoMatPre);
+        // cv.imshow("canvas", videoMatPre);
       }
 
       videoMatPre = videoMatNow.clone();
@@ -404,8 +476,10 @@ function successCallback(stream) {
       // ctx.moveTo(10, 10);    // ペンを (30, 50) へ移動
       // ctx.lineTo(11, 10);  // 直線を (150, 100) へ描く
       // ctx.stroke();          // パスを描画
-
+      */
       read_flag += 1;
+      
+      
       let delay = 1000 / FPS - (Date.now() - begin);
       if(delay<0){
         delay = 0;
