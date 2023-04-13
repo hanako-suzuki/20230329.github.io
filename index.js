@@ -49,9 +49,9 @@ function successCallback(stream) {
   let videoPreview = new cv.Mat(height, width, cv.CV_8UC4);
   const box_size = 4;
   const box_size_harf = box_size/2;
-  const base_x = 150;
-  const base_y = 200;
-  const image_size = 16*box_size+box_size;
+  const base_x = 10;
+  const base_y = 20;
+  const image_size = 64*box_size+box_size;
   const left_high = [new cv.Point(base_x,base_y), new cv.Point(base_x+box_size,base_y), new cv.Point(base_x+box_size,base_y+box_size), new cv.Point(base_x,base_y+box_size)];
   const right_high = [new cv.Point(base_x+image_size,base_y), new cv.Point(base_x+image_size+box_size,base_y), new cv.Point(base_x+image_size+box_size,base_y+box_size), new cv.Point(base_x+image_size,base_y+box_size)];
   const right_low =[new cv.Point(base_x+image_size,base_y+image_size), new cv.Point(base_x+image_size+box_size,base_y+image_size), new cv.Point(base_x+image_size+box_size,base_y+image_size+box_size), new cv.Point(base_x+image_size,base_y+image_size+box_size)];
