@@ -27,10 +27,10 @@ body {
   display: block;
 }
 
-#button {
+/* #button {
   position:absolute;
-  /* top:500px; */
-}
+  /* top:500px; 
+} */
 
 #canvas {
   display: block;
