@@ -23,6 +23,8 @@ const ctx = canvas.getContext("2d");
 const promise = navigator.mediaDevices.getUserMedia(medias);
 const textArea = document.getElementById("textArea");
 
+let pilot_flag = 0;
+
 // import LSD from './lsd/lsd';
 
 promise.then(successCallback)
@@ -45,11 +47,11 @@ function successCallback(stream) {
   let blackAndWhiteMatNow = new cv.Mat(height, width, cv.CV_8UC1);
 
   let videoPreview = new cv.Mat(height, width, cv.CV_8UC4);
-  const box_size = 10;
+  const box_size = 4;
   const box_size_harf = box_size/2;
   const base_x = 150;
-  const base_y = 255;
-  const image_size = 100;
+  const base_y = 200;
+  const image_size = 16*box_size+box_size;
   const left_high = [new cv.Point(base_x,base_y), new cv.Point(base_x+box_size,base_y), new cv.Point(base_x+box_size,base_y+box_size), new cv.Point(base_x,base_y+box_size)];
   const right_high = [new cv.Point(base_x+image_size,base_y), new cv.Point(base_x+image_size+box_size,base_y), new cv.Point(base_x+image_size+box_size,base_y+box_size), new cv.Point(base_x+image_size,base_y+box_size)];
   const right_low =[new cv.Point(base_x+image_size,base_y+image_size), new cv.Point(base_x+image_size+box_size,base_y+image_size), new cv.Point(base_x+image_size+box_size,base_y+image_size+box_size), new cv.Point(base_x+image_size,base_y+image_size+box_size)];
@@ -63,6 +65,11 @@ function successCallback(stream) {
 
   let read_flag = 0;
   let H_inv;
+  let sync_pannel="0";
+  // const color_name = ["red", "green", "blue", "lightblue", "yellow", "navy", "purple", "orange", "white"];
+  // const color_bit = ["100","011","010","110","111","000","001","101", "-1"];
+  const color_name = ["red", "green", "blue", "lightblue", "white"];
+  const color_bit = ["00","01","10","11","-1"];
 
   let connection;
 
@@ -85,23 +92,23 @@ function successCallback(stream) {
       videoMatNow = cv.matFromImageData(ctx.getImageData(0, 0, canvas.width, canvas.height));
 
       videoPreview = videoMatNow.clone();
-      for(let i=0;i<3;i++){
+      for(let i=0;i<4;i++){
         for(let j=0; j<4; j++){
           cv.line(videoPreview, preview_points[i][j], preview_points[i][(j+1)%4],colorRed, 1);
         }
       }
-      cv.imshow("canvas",videoPreview);
+      // cv.imshow("canvas",videoPreview);
 
       // get pilot signal
-      if(read_flag==20){
-
+      // if(pilot_flag == 1){
+      if(read_flag>20 & pilot_flag==0){
         // pilot signal -Red
         let R_value = 0;
         let G_value = 0;
         let B_value = 0;
         for(let i=left_high[0].x+box_size_harf-1; i<left_high[0].x+box_size_harf+1; i++){
           for(let j=left_high[0].y+box_size_harf-1; j<left_high[0].y+box_size_harf+1; j++){
-            let data = videoPreview.ucharPtr(i,j);
+            let data = videoPreview.ucharPtr(j,i);
             R_value += data[0]/4;
             G_value += data[1]/4;
             B_value += data[2]/4;
@@ -115,7 +122,7 @@ function successCallback(stream) {
         B_value = 0;
         for(let i=right_high[0].x+box_size_harf-1; i<right_high[0].x+box_size_harf+1; i++){
           for(let j=right_high[0].y+box_size_harf-1; j<right_high[0].y+box_size_harf+1; j++){
-            let data = videoPreview.ucharPtr(i,j);
+            let data = videoPreview.ucharPtr(j,i);
             R_value += data[0]/4;
             G_value += data[1]/4;
             B_value += data[2]/4;
@@ -129,7 +136,7 @@ function successCallback(stream) {
         B_value = 0;
         for(let i=left_low[0].x+box_size_harf-1; i<left_low[0].x+box_size_harf+1; i++){
           for(let j=left_low[0].y+box_size_harf-1; j<left_low[0].y+box_size_harf+1; j++){
-            let data = videoPreview.ucharPtr(i,j);
+            let data = videoPreview.ucharPtr(j,i);
             R_value += data[0]/4;
             G_value += data[1]/4;
             B_value += data[2]/4;
@@ -139,7 +146,65 @@ function successCallback(stream) {
 
         textArea.innerHTML = "R: [" + String(R_pilot[0]) + ", " + String(R_pilot[1]) + ", " + String(R_pilot[2]) + "] " +
                              "G: [" + String(G_pilot[0]) + ", " + String(G_pilot[1]) + ", " + String(G_pilot[2]) + "] " +
-                             "B: [" + String(B_pilot[0]) + ", " + String(B_pilot[1]) + ", " + String(B_pilot[2]);
+                             "B: [" + String(B_pilot[0]) + ", " + String(B_pilot[1]) + ", " + String(B_pilot[2]) + "]";
+
+        H_inv = calc_H(R_pilot, G_pilot, B_pilot);
+        pilot_flag = 1;
+        // read_flag = 1;
+      }
+
+      // read color
+      if(pilot_flag==1){
+
+        // check sync pannel
+        let R_value = 0;
+        let G_value = 0;
+        let B_value = 0;
+        for(let i=right_low[0].x+box_size_harf-1; i<right_low[0].x+box_size_harf+1; i++){
+          for(let j=right_low[0].y+box_size_harf-1; j<right_low[0].y+box_size_harf+1; j++){
+            let data = videoPreview.ucharPtr(j,i);
+            R_value += data[0]/4;
+            G_value += data[1]/4;
+            B_value += data[2]/4;
+          }
+        }
+        let receptColor = [R_value, G_value, B_value];
+        let bit = demodulate_color(receptColor, H_inv);
+        // textArea.innerHTML = bit;
+        // sync pannel red->green or green->red
+        if( (sync_pannel=="00"&bit=="01") || (sync_pannel=="01"&bit=="00") ){
+          // read codeword
+          let row_start = left_high[1].x + box_size_harf;
+          let row_end = right_high[0].x - box_size_harf;
+          let col_high = left_high[0].y + box_size_harf;
+          let col_low = left_low[0].y + box_size_harf;
+          textArea.innerHTML = "bird";
+          for(let i=0;;i++){
+            let tmp = row_start + box_size*i;
+            if(tmp >= row_end){
+              break;
+            }
+            let bit = get_color(videoMatNow, H_inv, tmp, col_high);
+            if(bit != "-1"){
+              // except white(=null)
+              let bit_high = bit;
+              let bit_low = get_color(videoMatNow, H_inv, tmp, col_low);
+              if(bit_low != "-1"){
+                let signal_y = col_high+(8*color_bit.indexOf(bit_high)+color_bit.indexOf(bit_low))/64;
+                let signal_x = tmp;
+                let bit_signal = get_color(videoMatNow, H_inv, signal_x, signal_y);
+                cv.line(videoPreview, new cv.Point(signal_x-box_size_harf, signal_y-box_size_harf), new cv.Point(signal_x+box_size_harf, signal_y-box_size_harf), colorRed, 1);
+                cv.line(videoPreview, new cv.Point(signal_x+box_size_harf, signal_y-box_size_harf), new cv.Point(signal_x+box_size_harf, signal_y+box_size_harf), colorRed, 1);
+                cv.line(videoPreview, new cv.Point(signal_x+box_size_harf, signal_y+box_size_harf), new cv.Point(signal_x-box_size_harf, signal_y+box_size_harf), colorRed, 1);
+                cv.line(videoPreview, new cv.Point(signal_x-box_size_harf, signal_y+box_size_harf), new cv.Point(signal_x-box_size_harf, signal_y-box_size_harf), colorRed, 1);
+
+              }
+            }
+
+          }
+        }
+        cv.imshow("canvas",videoPreview);
+        sync_pannel = bit;
       }
     
       
@@ -467,7 +532,7 @@ function successCallback(stream) {
         // cv.imshow("canvas", videoMatPre);
       }
 
-      videoMatPre = videoMatNow.clone();
+      videoMatPre = videoMatNow.clone();*/
       // cv.line(videoMatPre, (10,10), (10, 11), (255, 0, 0), 1);
       // cv.imshow("canvas", videoMatPre);
 
@@ -476,7 +541,7 @@ function successCallback(stream) {
       // ctx.moveTo(10, 10);    // ペンを (30, 50) へ移動
       // ctx.lineTo(11, 10);  // 直線を (150, 100) へ描く
       // ctx.stroke();          // パスを描画
-      */
+      
       read_flag += 1;
       
       
@@ -729,6 +794,57 @@ function successCallback(stream) {
     return color_name;
   }
 
+  // チャネル推定
+  function demodulate_color(receptColor, H_inv){
+
+    // const x = [0.65,  0.3,  0.15,  0.275,  0.4,   0.25,  0.4,  0.5,  0.367];
+    // const y = [0.3,   0.6,  0.05,  0.4,    0.45,  0.2,   0.2,  0.35, 0.317];
+
+    const x = [0.65,  0.3,  0.15,  0.275, 0.367];
+    const y = [0.3,   0.6,  0.05,  0.4,   0.317];
+    
+    
+    const n = 3;
+    let ans_sum = 0.0;
+    let ans = [0.0, 0.0, 0.0];
+    for(let r=0; r<n; r++){
+      let sum = 0;
+      for(let i=0; i<n; i++){
+        sum += H_inv[r][i]*receptColor[i];
+        ans_sum += H_inv[r][i]*receptColor[i];
+      }
+      if(sum>0){
+        ans[r] = sum;
+      }else{
+        ans[r] = 0;
+      }
+    }
+    for(let r=0; r<n; r++){
+      if(ans_sum != 0){
+        ans[r] /= ans_sum;
+      }
+    }
+    const ans_x = 0.65*ans[0] + 0.3*ans[1] + 0.15*ans[2];
+    const ans_y = 0.3*ans[0] + 0.6*ans[1] + 0.05*ans[2];
+
+    // let color_dis = [0,0,0,0,0,0,0,0]; // 各シンボルとの距離を格納
+    let tmp;
+    let min_dis;
+    let min_id=0;
+    for(let i=0; i<8; i++){
+      tmp = Math.sqrt((x[i]-ans_x)**2 + (y[i]-ans_y)**2);
+      if(i==0 || tmp<min_dis){
+        min_dis = tmp;
+        min_id = i;
+      }
+    }
+    const bit = color_bit[min_id];
+    // 色表示
+    // textArea.innerHTML = String(color[0]) + ", " + String(color[1]) + ", " + String(color[1]) + " " + color_name[min_id];
+    // textArea.innerHTML = String(receptColor[0]) + ", " + String(receptColor[1]) + ", " + String(receptColor[2]) + ", " + color_name[min_id];
+    return bit;
+  }
+
   // チャネル行列計算
   function calc_H(R_pilot, G_pilot, B_pilot){
     let H = [[R_pilot[0], G_pilot[0], B_pilot[0]], [R_pilot[1], G_pilot[1], B_pilot[1]], [R_pilot[2], G_pilot[2], B_pilot[2]]];
@@ -757,6 +873,24 @@ function successCallback(stream) {
     }
     return H_inv;
   }
+
+  // 色取得
+  function get_color(videoPreview, H_inv, x_c, y_c){
+    let R_value = 0;
+    let G_value = 0;
+    let B_value = 0;
+    for(let i=x_c-1; i<x_c+1; i++){
+      for(let j=y_c-1; j<y_c+1; j++){
+        let data = videoPreview.ucharPtr(j,i);
+        R_value += data[0]/4;
+        G_value += data[1]/4;
+        B_value += data[2]/4;
+      }
+    }
+    let receptColor = [R_value, G_value, B_value];
+    let bit = demodulate_color(receptColor, H_inv);
+    return bit;
+  }
   // connection.close()
 
 }
@@ -764,3 +898,8 @@ function successCallback(stream) {
 function errorCallback(err) {
   alert(err);
 };
+
+function setPilot(){
+  const pilotButtonB = document.getElementById("pilotButton");
+  pilot_flag = 1;
+}
