@@ -97,6 +97,9 @@ function successCallback(stream) {
           cv.line(videoPreview, preview_points[i][j], preview_points[i][(j+1)%4],colorRed, 1);
         }
       }
+      if(read_flag==50){
+        textArea.innerHTML = "bird";
+      }
       // cv.imshow("canvas",videoPreview);
 
       // get pilot signal
@@ -178,7 +181,7 @@ function successCallback(stream) {
           let row_end = right_high[0].x - box_size_harf;
           let col_high = left_high[0].y + box_size_harf;
           let col_low = left_low[0].y + box_size_harf;
-          textArea.innerHTML = "bird";
+          // textArea.innerHTML = "bird";
           for(let i=0;;i++){
             let tmp = row_start + box_size*i;
             if(tmp >= row_end){
