@@ -97,7 +97,7 @@ function successCallback(stream) {
           cv.line(videoPreview, preview_points[i][j], preview_points[i][(j+1)%4],colorRed, 1);
         }
       }
-      if(read_flag==50){
+      if(read_flag==150){
         textArea.innerHTML = "bird";
       }
       // cv.imshow("canvas",videoPreview);
