@@ -147,9 +147,9 @@ function successCallback(stream) {
         }
         const B_pilot = [R_value, G_value, B_value];
 
-        textArea.innerHTML = "R: [" + String(R_pilot[0]) + ", " + String(R_pilot[1]) + ", " + String(R_pilot[2]) + "] " +
-                             "G: [" + String(G_pilot[0]) + ", " + String(G_pilot[1]) + ", " + String(G_pilot[2]) + "] " +
-                             "B: [" + String(B_pilot[0]) + ", " + String(B_pilot[1]) + ", " + String(B_pilot[2]) + "]";
+        // textArea.innerHTML = "R: [" + String(R_pilot[0]) + ", " + String(R_pilot[1]) + ", " + String(R_pilot[2]) + "] " +
+        //                      "G: [" + String(G_pilot[0]) + ", " + String(G_pilot[1]) + ", " + String(G_pilot[2]) + "] " +
+        //                      "B: [" + String(B_pilot[0]) + ", " + String(B_pilot[1]) + ", " + String(B_pilot[2]) + "]";
 
         H_inv = calc_H(R_pilot, G_pilot, B_pilot);
         pilot_flag = 1;
