@@ -97,10 +97,7 @@ function successCallback(stream) {
           cv.line(videoPreview, preview_points[i][j], preview_points[i][(j+1)%4],colorRed, 1);
         }
       }
-      if(read_flag==50){
-        textArea.innerHTML = "bird";
-      }
-      // cv.imshow("canvas",videoPreview);
+      cv.imshow("canvas",videoPreview);
 
       // get pilot signal
       // if(pilot_flag == 1){
@@ -147,9 +144,9 @@ function successCallback(stream) {
         }
         const B_pilot = [R_value, G_value, B_value];
 
-        // textArea.innerHTML = "R: [" + String(R_pilot[0]) + ", " + String(R_pilot[1]) + ", " + String(R_pilot[2]) + "] " +
-        //                      "G: [" + String(G_pilot[0]) + ", " + String(G_pilot[1]) + ", " + String(G_pilot[2]) + "] " +
-        //                      "B: [" + String(B_pilot[0]) + ", " + String(B_pilot[1]) + ", " + String(B_pilot[2]) + "]";
+        textArea.innerHTML = "R: [" + String(R_pilot[0]) + ", " + String(R_pilot[1]) + ", " + String(R_pilot[2]) + "] " +
+                             "G: [" + String(G_pilot[0]) + ", " + String(G_pilot[1]) + ", " + String(G_pilot[2]) + "] " +
+                             "B: [" + String(B_pilot[0]) + ", " + String(B_pilot[1]) + ", " + String(B_pilot[2]) + "]";
 
         H_inv = calc_H(R_pilot, G_pilot, B_pilot);
         pilot_flag = 1;
