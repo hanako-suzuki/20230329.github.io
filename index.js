@@ -212,7 +212,7 @@ function successCallback(stream) {
     
       
       // 枠検出
-      if(read_flag%FPS==0 & read_flag>0){
+      if(read_flag%FPS==0){
         // ２値化
         cv.cvtColor(videoMatNow, blackAndWhiteMatNow, cv.COLOR_RGB2GRAY);
         if(read_flag !=0){
@@ -438,15 +438,12 @@ function successCallback(stream) {
             //   posLog.pop(); // posLogの一番最後を削除
             // }
           }
-          // cv.imshow("canvas", videoMatPre);
+          cv.imshow("canvas", videoMatPre);
         }
-      }
-      if(read_flag%FPS==0){
         videoMatPre = videoMatNow.clone();
-        
       }
       // cv.line(videoMatPre, (10,10), (10, 11), (255, 0, 0), 1);
-      cv.imshow("canvas", videoMatPre);
+      // cv.imshow("canvas", videoMatPre);
 
       // キャンバス上に線を描画
       // ctx.beginPath();       // 新しいパスを開始
