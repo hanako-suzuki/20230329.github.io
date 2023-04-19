@@ -92,7 +92,7 @@ function successCallback(stream) {
       // videoMatNow.data.set(ctx.getImageData(0, 0, width, height).data);
       videoMatNow = cv.matFromImageData(ctx.getImageData(0, 0, canvas.width, canvas.height));
 
-      videoPreview = videoMatNow.clone();
+      // videoPreview = videoMatNow.clone();
       for(let i=0;i<4;i++){
         for(let j=0; j<4; j++){
           cv.line(videoPreview, preview_points[i][j], preview_points[i][(j+1)%4],colorRed, 1);
@@ -102,57 +102,57 @@ function successCallback(stream) {
 
       // get pilot signal
       // if(pilot_flag == 1){
-      if(read_flag>20 & pilot_flag==0){
-        // pilot signal -Red
-        let R_value = 0;
-        let G_value = 0;
-        let B_value = 0;
-        for(let i=left_high[0].x+box_size_harf-1; i<left_high[0].x+box_size_harf+1; i++){
-          for(let j=left_high[0].y+box_size_harf-1; j<left_high[0].y+box_size_harf+1; j++){
-            let data = videoPreview.ucharPtr(j,i);
-            R_value += data[0]/4;
-            G_value += data[1]/4;
-            B_value += data[2]/4;
-          }
-        }
-        const R_pilot = [R_value, G_value, B_value];
+      // if(read_flag>20 & pilot_flag==0){
+      //   // pilot signal -Red
+      //   let R_value = 0;
+      //   let G_value = 0;
+      //   let B_value = 0;
+      //   for(let i=left_high[0].x+box_size_harf-1; i<left_high[0].x+box_size_harf+1; i++){
+      //     for(let j=left_high[0].y+box_size_harf-1; j<left_high[0].y+box_size_harf+1; j++){
+      //       let data = videoPreview.ucharPtr(j,i);
+      //       R_value += data[0]/4;
+      //       G_value += data[1]/4;
+      //       B_value += data[2]/4;
+      //     }
+      //   }
+      //   const R_pilot = [R_value, G_value, B_value];
 
-        // pilot signal -Green
-        R_value = 0;
-        G_value = 0;
-        B_value = 0;
-        for(let i=right_high[0].x+box_size_harf-1; i<right_high[0].x+box_size_harf+1; i++){
-          for(let j=right_high[0].y+box_size_harf-1; j<right_high[0].y+box_size_harf+1; j++){
-            let data = videoPreview.ucharPtr(j,i);
-            R_value += data[0]/4;
-            G_value += data[1]/4;
-            B_value += data[2]/4;
-          }
-        }
-        const G_pilot = [R_value, G_value, B_value];
+      //   // pilot signal -Green
+      //   R_value = 0;
+      //   G_value = 0;
+      //   B_value = 0;
+      //   for(let i=right_high[0].x+box_size_harf-1; i<right_high[0].x+box_size_harf+1; i++){
+      //     for(let j=right_high[0].y+box_size_harf-1; j<right_high[0].y+box_size_harf+1; j++){
+      //       let data = videoPreview.ucharPtr(j,i);
+      //       R_value += data[0]/4;
+      //       G_value += data[1]/4;
+      //       B_value += data[2]/4;
+      //     }
+      //   }
+      //   const G_pilot = [R_value, G_value, B_value];
 
-        // pilot signal -Blue
-        R_value = 0;
-        G_value = 0;
-        B_value = 0;
-        for(let i=left_low[0].x+box_size_harf-1; i<left_low[0].x+box_size_harf+1; i++){
-          for(let j=left_low[0].y+box_size_harf-1; j<left_low[0].y+box_size_harf+1; j++){
-            let data = videoPreview.ucharPtr(j,i);
-            R_value += data[0]/4;
-            G_value += data[1]/4;
-            B_value += data[2]/4;
-          }
-        }
-        const B_pilot = [R_value, G_value, B_value];
+      //   // pilot signal -Blue
+      //   R_value = 0;
+      //   G_value = 0;
+      //   B_value = 0;
+      //   for(let i=left_low[0].x+box_size_harf-1; i<left_low[0].x+box_size_harf+1; i++){
+      //     for(let j=left_low[0].y+box_size_harf-1; j<left_low[0].y+box_size_harf+1; j++){
+      //       let data = videoPreview.ucharPtr(j,i);
+      //       R_value += data[0]/4;
+      //       G_value += data[1]/4;
+      //       B_value += data[2]/4;
+      //     }
+      //   }
+      //   const B_pilot = [R_value, G_value, B_value];
 
-        textArea.innerHTML = "R: [" + String(R_pilot[0]) + ", " + String(R_pilot[1]) + ", " + String(R_pilot[2]) + "] " +
-                             "G: [" + String(G_pilot[0]) + ", " + String(G_pilot[1]) + ", " + String(G_pilot[2]) + "] " +
-                             "B: [" + String(B_pilot[0]) + ", " + String(B_pilot[1]) + ", " + String(B_pilot[2]) + "]";
+      //   textArea.innerHTML = "R: [" + String(R_pilot[0]) + ", " + String(R_pilot[1]) + ", " + String(R_pilot[2]) + "] " +
+      //                        "G: [" + String(G_pilot[0]) + ", " + String(G_pilot[1]) + ", " + String(G_pilot[2]) + "] " +
+      //                        "B: [" + String(B_pilot[0]) + ", " + String(B_pilot[1]) + ", " + String(B_pilot[2]) + "]";
 
-        H_inv = calc_H(R_pilot, G_pilot, B_pilot);
-        pilot_flag = 1;
-        // read_flag = 1;
-      }
+      //   H_inv = calc_H(R_pilot, G_pilot, B_pilot);
+      //   pilot_flag = 1;
+      //   // read_flag = 1;
+      // }
 
       // read color
       // if(pilot_flag==1){
@@ -443,9 +443,10 @@ function successCallback(stream) {
       }
       if(read_flag%FPS==0){
         videoMatPre = videoMatNow.clone();
+        
       }
       // cv.line(videoMatPre, (10,10), (10, 11), (255, 0, 0), 1);
-      // cv.imshow("canvas", videoMatPre);
+      cv.imshow("canvas", videoMatPre);
 
       // キャンバス上に線を描画
       // ctx.beginPath();       // 新しいパスを開始
