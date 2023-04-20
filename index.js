@@ -439,6 +439,7 @@ function successCallback(stream) {
             // }
           }
           cv.imshow("canvas", videoMatPre);
+          videoMatPre = videoMatNow.clone();
         }
         videoMatPre = videoMatNow.clone();
       }
