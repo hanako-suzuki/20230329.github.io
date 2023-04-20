@@ -287,7 +287,7 @@ function successCallback(stream) {
                   if(200<tmpR & tmpG<50 & 200<tmpB){
                     tmpFlag = 1;
                   }
-                  tmpFlag = 1;
+                  // tmpFlag = 1;
                 }
                 if(tmpFlag == 0){
                   continue;
