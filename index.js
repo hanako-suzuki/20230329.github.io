@@ -41,6 +41,7 @@ function successCallback(stream) {
 
   let videoMatPre = new cv.Mat(height, width, cv.CV_8UC4);
   let videoMatNow = new cv.Mat(height, width, cv.CV_8UC4);
+  let videoMatPrePre = new cv.Mat(height, width, cv.CV_8UC4);
   // let videoMatPre = new cv.Mat(height, width, cv.CV_8UC3);
   // let videoMatNow = new cv.Mat(height, width, cv.CV_8UC3);
   let blackAndWhiteMatPre = new cv.Mat(height, width, cv.CV_8UC1);
@@ -439,6 +440,7 @@ function successCallback(stream) {
             // }
           }
           cv.imshow("canvas", videoMatPre);
+          videoMatPrePre = videoMatPre.clone();
           videoMatPre = videoMatNow.clone();
         }
         videoMatPre = videoMatNow.clone();
@@ -454,7 +456,9 @@ function successCallback(stream) {
       
       read_flag += 1;
       
-      
+      if(read_flag>0){
+        cv.imshow("canvas", videoMatPrePre);
+      }
       let delay = 1000 / FPS - (Date.now() - begin);
       if(delay<0){
         delay = 0;
