@@ -455,6 +455,9 @@ function successCallback(stream) {
       // ctx.stroke();          // パスを描画
       
       read_flag += 1;
+      if(read_flag>50){
+        window.location.href = 'https://www.neuralmarketing.co.jp/';
+      }
       
       if(read_flag>0){
         cv.imshow("canvas", videoMatPrePre);
